@@ -1,0 +1,30 @@
+# Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/*.class
+
+# Node
+frontend/node_modules/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp SQL files
+fix-admin-password.sql
+reset-admin.sql
+reset-admin-simple.sql
+recreate-admin.sql
+create-new-admin.sql
+create-working-admin.sql
+update-admin-password.sql
+GeneratePassword.java
