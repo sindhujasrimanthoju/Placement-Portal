@@ -1,7 +1,12 @@
 @echo off
 setlocal
 
-set "JAVA_HOME=C:\Program Files\Java\jdk-25"
+if not defined JAVA_HOME (
+    echo JAVA_HOME is not set.
+    echo Please set JAVA_HOME to your installed JDK path before running this script.
+    exit /b 1
+)
+
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 echo ============================================

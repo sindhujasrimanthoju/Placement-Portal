@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: placement-portal-db
+    environment:
+      MYSQL_ROOT_PASSWORD: system@123
+      MYSQL_DATABASE: placement_portal
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: placement-portal-backend
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/placement_portal?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: system@123
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationAndValidation12345
+      JWT_EXPIRATION: 86400000
+      FILE_UPLOAD_DIR: /app/uploads/resumes
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: placement-portal-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  backend_uploads:

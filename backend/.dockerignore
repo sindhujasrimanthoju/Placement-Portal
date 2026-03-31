@@ -1,0 +1,7 @@
+target
+backend.log
+backend.err
+backend-run.log
+backend-run.err
+.mvn
+.git
