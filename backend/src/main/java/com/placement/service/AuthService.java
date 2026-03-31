@@ -1,6 +1,8 @@
 package com.placement.service;
 
 import com.placement.config.JwtUtil;
+import com.placement.dto.AuthRequests.CompanyRegistrationRequest;
+import com.placement.dto.AuthRequests.StudentRegistrationRequest;
 import com.placement.model.*;
 import com.placement.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,24 +51,28 @@ public class AuthService {
     }
     
     @Transactional
-    public Map<String, Object> registerStudent(Map<String, String> request) {
-        if (userRepository.existsByUsername(request.get("username"))) {
+    public Map<String, Object> registerStudent(StudentRegistrationRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
+        }
+
+        if (studentRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
         }
         
         User user = new User();
-        user.setUsername(request.get("username"));
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setUsername(request.getUsername().trim());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(User.Role.STUDENT);
         user = userRepository.save(user);
         
         Student student = new Student();
         student.setUserId(user.getId());
-        student.setName(request.get("name"));
-        student.setEmail(request.get("email"));
-        student.setBranch(request.get("branch"));
-        student.setCgpa(Double.parseDouble(request.get("cgpa")));
-        student.setYear(Integer.parseInt(request.get("year")));
+        student.setName(request.getName().trim());
+        student.setEmail(request.getEmail().trim().toLowerCase());
+        student.setBranch(request.getBranch().trim().toUpperCase());
+        student.setCgpa(request.getCgpa());
+        student.setYear(request.getYear());
         studentRepository.save(student);
         
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name(), user.getId());
@@ -80,22 +86,26 @@ public class AuthService {
     }
     
     @Transactional
-    public Map<String, Object> registerCompany(Map<String, String> request) {
-        if (userRepository.existsByUsername(request.get("username"))) {
+    public Map<String, Object> registerCompany(CompanyRegistrationRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
+        }
+
+        if (companyRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
         }
         
         User user = new User();
-        user.setUsername(request.get("username"));
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setUsername(request.getUsername().trim());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(User.Role.COMPANY);
         user = userRepository.save(user);
         
         Company company = new Company();
         company.setUserId(user.getId());
-        company.setName(request.get("name"));
-        company.setEmail(request.get("email"));
-        company.setDescription(request.get("description"));
+        company.setName(request.getName().trim());
+        company.setEmail(request.getEmail().trim().toLowerCase());
+        company.setDescription(request.getDescription().trim());
         companyRepository.save(company);
         
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name(), user.getId());

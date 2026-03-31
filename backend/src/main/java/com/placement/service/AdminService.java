@@ -1,5 +1,9 @@
 package com.placement.service;
 
+import com.placement.dto.CompanyRequests.AdminDriveCreateRequest;
+import com.placement.dto.CompanyRequests.DriveRequest;
+import com.placement.dto.StudentRequests.AdminStudentCreateRequest;
+import com.placement.dto.StudentRequests.AdminStudentUpdateRequest;
 import com.placement.model.*;
 import com.placement.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,34 +52,46 @@ public class AdminService {
     }
     
     @Transactional
-    public Student addStudent(Map<String, String> request) {
+    public Student addStudent(AdminStudentCreateRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (studentRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
         User user = new User();
-        user.setUsername(request.get("username"));
-        user.setPassword(passwordEncoder.encode(request.get("password")));
+        user.setUsername(request.getUsername().trim());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(User.Role.STUDENT);
         user = userRepository.save(user);
         
         Student student = new Student();
         student.setUserId(user.getId());
-        student.setName(request.get("name"));
-        student.setEmail(request.get("email"));
-        student.setBranch(request.get("branch"));
-        student.setCgpa(Double.parseDouble(request.get("cgpa")));
-        student.setYear(Integer.parseInt(request.get("year")));
+        student.setName(request.getName().trim());
+        student.setEmail(request.getEmail().trim().toLowerCase());
+        student.setBranch(request.getBranch().trim().toUpperCase());
+        student.setCgpa(request.getCgpa());
+        student.setYear(request.getYear());
         return studentRepository.save(student);
     }
     
     @Transactional
-    public Student updateStudent(Long id, Student updatedStudent) {
+    public Student updateStudent(Long id, AdminStudentUpdateRequest updatedStudent) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        if (!student.getEmail().equalsIgnoreCase(updatedStudent.getEmail())
+                && studentRepository.existsByEmail(updatedStudent.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
         
-        student.setName(updatedStudent.getName());
-        student.setEmail(updatedStudent.getEmail());
-        student.setBranch(updatedStudent.getBranch());
+        student.setName(updatedStudent.getName().trim());
+        student.setEmail(updatedStudent.getEmail().trim().toLowerCase());
+        student.setBranch(updatedStudent.getBranch().trim().toUpperCase());
         student.setCgpa(updatedStudent.getCgpa());
         student.setYear(updatedStudent.getYear());
-        student.setSkills(updatedStudent.getSkills());
+        student.setSkills(updatedStudent.getSkills() == null ? null : updatedStudent.getSkills().trim());
         
         return studentRepository.save(student);
     }
@@ -92,7 +108,7 @@ public class AdminService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
         
-        company.setStatus(Company.Status.valueOf(status));
+        company.setStatus(Company.Status.valueOf(status.trim().toUpperCase()));
         return companyRepository.save(company);
     }
     
@@ -104,21 +120,32 @@ public class AdminService {
     }
     
     @Transactional
-    public Drive createDrive(Drive drive) {
+    public Drive createDrive(AdminDriveCreateRequest request) {
+        companyRepository.findById(request.getCompanyId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Drive drive = new Drive();
+        drive.setCompanyId(request.getCompanyId());
+        drive.setRole(request.getRole().trim());
+        drive.setSalary(request.getSalary());
+        drive.setMinCgpa(request.getMinCgpa());
+        drive.setBranchesAllowed(request.getBranchesAllowed().trim().toUpperCase());
+        drive.setYearAllowed(request.getYearAllowed());
+        drive.setDescription(request.getDescription().trim());
         return driveRepository.save(drive);
     }
     
     @Transactional
-    public Drive updateDrive(Long id, Drive updatedDrive) {
+    public Drive updateDrive(Long id, DriveRequest updatedDrive) {
         Drive drive = driveRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Drive not found"));
         
-        drive.setRole(updatedDrive.getRole());
+        drive.setRole(updatedDrive.getRole().trim());
         drive.setSalary(updatedDrive.getSalary());
         drive.setMinCgpa(updatedDrive.getMinCgpa());
-        drive.setBranchesAllowed(updatedDrive.getBranchesAllowed());
+        drive.setBranchesAllowed(updatedDrive.getBranchesAllowed().trim().toUpperCase());
         drive.setYearAllowed(updatedDrive.getYearAllowed());
-        drive.setDescription(updatedDrive.getDescription());
+        drive.setDescription(updatedDrive.getDescription().trim());
         
         return driveRepository.save(drive);
     }

@@ -1,11 +1,12 @@
 package com.placement.controller;
 
-import com.placement.config.JwtUtil;
-import com.placement.model.Student;
+import com.placement.config.AuthenticatedUser;
+import com.placement.dto.StudentRequests.StudentProfileUpdateRequest;
 import com.placement.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * Student controller
@@ -15,66 +16,35 @@ import java.util.Map;
 public class StudentController {
     
     private final StudentService studentService;
-    private final JwtUtil jwtUtil;
     
-    public StudentController(StudentService studentService, JwtUtil jwtUtil) {
+    public StudentController(StudentService studentService) {
         this.studentService = studentService;
-        this.jwtUtil = jwtUtil;
-    }
-    
-    private Long getUserIdFromToken(String token) {
-        return jwtUtil.extractUserId(token.substring(7));
     }
     
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String token) {
-        try {
-            Long userId = getUserIdFromToken(token);
-            return ResponseEntity.ok(studentService.getProfile(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(studentService.getProfile(user.userId()));
     }
     
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
-                                          @RequestBody Student student) {
-        try {
-            Long userId = getUserIdFromToken(token);
-            return ResponseEntity.ok(studentService.updateProfile(userId, student));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal AuthenticatedUser user,
+                                           @Valid @RequestBody StudentProfileUpdateRequest request) {
+        return ResponseEntity.ok(studentService.updateProfile(user.userId(), request));
     }
     
     @GetMapping("/drives")
-    public ResponseEntity<?> getEligibleDrives(@RequestHeader("Authorization") String token) {
-        try {
-            Long userId = getUserIdFromToken(token);
-            return ResponseEntity.ok(studentService.getEligibleDrives(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> getEligibleDrives(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(studentService.getEligibleDrives(user.userId()));
     }
     
     @PostMapping("/apply/{driveId}")
-    public ResponseEntity<?> applyToDrive(@RequestHeader("Authorization") String token,
-                                         @PathVariable Long driveId) {
-        try {
-            Long userId = getUserIdFromToken(token);
-            return ResponseEntity.ok(studentService.applyToDrive(userId, driveId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> applyToDrive(@AuthenticationPrincipal AuthenticatedUser user,
+                                          @PathVariable Long driveId) {
+        return ResponseEntity.ok(studentService.applyToDrive(user.userId(), driveId));
     }
     
     @GetMapping("/applications")
-    public ResponseEntity<?> getApplications(@RequestHeader("Authorization") String token) {
-        try {
-            Long userId = getUserIdFromToken(token);
-            return ResponseEntity.ok(studentService.getApplications(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> getApplications(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(studentService.getApplications(user.userId()));
     }
 }

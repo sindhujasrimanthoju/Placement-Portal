@@ -1,10 +1,14 @@
 package com.placement.controller;
 
-import com.placement.model.*;
+import com.placement.dto.CompanyRequests.AdminDriveCreateRequest;
+import com.placement.dto.CompanyRequests.DriveRequest;
+import com.placement.dto.CompanyRequests.StatusUpdateRequest;
+import com.placement.dto.StudentRequests.AdminStudentCreateRequest;
+import com.placement.dto.StudentRequests.AdminStudentUpdateRequest;
 import com.placement.service.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * Admin controller
@@ -26,31 +30,19 @@ public class AdminController {
     }
     
     @PostMapping("/students")
-    public ResponseEntity<?> addStudent(@RequestBody Map<String, String> request) {
-        try {
-            return ResponseEntity.ok(adminService.addStudent(request));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> addStudent(@Valid @RequestBody AdminStudentCreateRequest request) {
+        return ResponseEntity.ok(adminService.addStudent(request));
     }
     
     @PutMapping("/students/{id}")
-    public ResponseEntity<?> updateStudent(@PathVariable Long id, @RequestBody Student student) {
-        try {
-            return ResponseEntity.ok(adminService.updateStudent(id, student));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> updateStudent(@PathVariable Long id, @Valid @RequestBody AdminStudentUpdateRequest student) {
+        return ResponseEntity.ok(adminService.updateStudent(id, student));
     }
     
     @DeleteMapping("/students/{id}")
     public ResponseEntity<?> deleteStudent(@PathVariable Long id) {
-        try {
-            adminService.deleteStudent(id);
-            return ResponseEntity.ok(Map.of("message", "Student deleted successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        adminService.deleteStudent(id);
+        return ResponseEntity.ok(java.util.Map.of("message", "Student deleted successfully"));
     }
     
     // Company management
@@ -61,22 +53,14 @@ public class AdminController {
     
     @PutMapping("/companies/{id}/status")
     public ResponseEntity<?> updateCompanyStatus(@PathVariable Long id,
-                                                 @RequestBody Map<String, String> request) {
-        try {
-            return ResponseEntity.ok(adminService.updateCompanyStatus(id, request.get("status")));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+                                                 @Valid @RequestBody StatusUpdateRequest request) {
+        return ResponseEntity.ok(adminService.updateCompanyStatus(id, request.getStatus()));
     }
     
     @DeleteMapping("/companies/{id}")
     public ResponseEntity<?> deleteCompany(@PathVariable Long id) {
-        try {
-            adminService.deleteCompany(id);
-            return ResponseEntity.ok(Map.of("message", "Company deleted successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        adminService.deleteCompany(id);
+        return ResponseEntity.ok(java.util.Map.of("message", "Company deleted successfully"));
     }
     
     // Drive management
@@ -86,31 +70,19 @@ public class AdminController {
     }
     
     @PostMapping("/drives")
-    public ResponseEntity<?> createDrive(@RequestBody Drive drive) {
-        try {
-            return ResponseEntity.ok(adminService.createDrive(drive));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> createDrive(@Valid @RequestBody AdminDriveCreateRequest drive) {
+        return ResponseEntity.ok(adminService.createDrive(drive));
     }
     
     @PutMapping("/drives/{id}")
-    public ResponseEntity<?> updateDrive(@PathVariable Long id, @RequestBody Drive drive) {
-        try {
-            return ResponseEntity.ok(adminService.updateDrive(id, drive));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<?> updateDrive(@PathVariable Long id, @Valid @RequestBody DriveRequest drive) {
+        return ResponseEntity.ok(adminService.updateDrive(id, drive));
     }
     
     @DeleteMapping("/drives/{id}")
     public ResponseEntity<?> deleteDrive(@PathVariable Long id) {
-        try {
-            adminService.deleteDrive(id);
-            return ResponseEntity.ok(Map.of("message", "Drive deleted successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        adminService.deleteDrive(id);
+        return ResponseEntity.ok(java.util.Map.of("message", "Drive deleted successfully"));
     }
     
     // Applications

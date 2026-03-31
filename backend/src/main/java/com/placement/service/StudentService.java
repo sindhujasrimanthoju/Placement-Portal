@@ -1,5 +1,6 @@
 package com.placement.service;
 
+import com.placement.dto.StudentRequests.StudentProfileUpdateRequest;
 import com.placement.model.*;
 import com.placement.repository.*;
 import org.springframework.stereotype.Service;
@@ -32,15 +33,15 @@ public class StudentService {
     }
     
     @Transactional
-    public Student updateProfile(Long userId, Student updatedStudent) {
+    public Student updateProfile(Long userId, StudentProfileUpdateRequest updatedStudent) {
         Student student = getProfile(userId);
-        student.setName(updatedStudent.getName());
-        student.setBranch(updatedStudent.getBranch());
+        student.setName(updatedStudent.getName().trim());
+        student.setBranch(updatedStudent.getBranch().trim().toUpperCase());
         student.setCgpa(updatedStudent.getCgpa());
         student.setYear(updatedStudent.getYear());
-        student.setSkills(updatedStudent.getSkills());
+        student.setSkills(updatedStudent.getSkills() == null ? null : updatedStudent.getSkills().trim());
         if (updatedStudent.getResumeUrl() != null) {
-            student.setResumeUrl(updatedStudent.getResumeUrl());
+            student.setResumeUrl(updatedStudent.getResumeUrl().trim());
         }
         return studentRepository.save(student);
     }
@@ -84,7 +85,11 @@ public class StudentService {
             return false;
         }
         
-        if (!drive.getBranchesAllowed().contains(student.getBranch())) {
+        Set<String> allowedBranches = Arrays.stream(drive.getBranchesAllowed().split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+        if (!allowedBranches.contains(student.getBranch().trim().toUpperCase())) {
             return false;
         }
         
